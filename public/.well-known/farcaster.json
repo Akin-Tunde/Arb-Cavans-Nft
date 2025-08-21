@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjMyMDI2NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDFGMkE1MkYwZjlDZDYwZGY4RDAwNTdjNGE1YTEwRUFlNjQyNjNCNDgifQ",
+    "payload": "eyJkb21haW4iOiJhcmItY2FudmFzLm5ldGxpZnkuYXBwIn0",
+    "signature": "MHgxYTlhZTA2ZGEwYjQ5OTU5NmFhZjRkN2IxOGJhNTVkZjRmYjczOTUzNmY1NGM2N2ZmMGEwM2EwOTdlMTYzMDNjMTQ3OTcwYzcwMjVlMDgwNjMyOTRhNmU2YWJlMTEyYjc5NDE1ZjYxZDNhYTA0ZThlYWYwYjM2ODMzMjQ5MGRhOTFi"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Example Frame",
+    "iconUrl": "https://arb-canvas.netlify.app/icon.png",
+    "homeUrl": "https://arb-canvas.netlify.app",
+    "imageUrl": "https://arb-canvas.netlify.app/image.png",
+    "buttonTitle": "Check this out",
+    "splashImageUrl": "https://arb-canvas.netlify.app/splash.png",
+    "splashBackgroundColor": "#eeccff",
+    "webhookUrl": "https://arb-canvas.netlify.app/api/webhook"
+  }
+}
