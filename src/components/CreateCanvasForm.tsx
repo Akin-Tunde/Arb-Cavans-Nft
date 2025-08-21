@@ -31,7 +31,7 @@ export function CreateCanvasForm({ onCanvasCreated }: CreateCanvasFormProps) {
     writeContract({
       ...factoryContract,
       functionName: 'createCanvas',
-      args: [width, height, priceInWei, feeInBps],
+      args: [BigInt(width), BigInt(height), priceInWei, BigInt(feeInBps)],
     });
   }
   

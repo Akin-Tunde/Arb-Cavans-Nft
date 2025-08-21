@@ -1,33 +1,32 @@
 // src/config.ts
-import type { Abi } from 'viem';
+
 
 // Import all your ABI JSON files
-import canvasFactoryAbi from './abis/canvasFactory.json';
-import farcasterCanvasAbi from './abis/farcasterCanvas.json';
-import pixelNftAbi from './abis/pixelNft.json';
-import marketplaceAbi from './abis/marketplace.json';
+import { canvasFactoryAbi } from './abis/CanvasFactory';
+import { farcasterCanvasAbi } from './abis/FarcasterCanvas';
+import { pixelNftAbi } from './abis/PixelNFT';
+import { marketplaceAbi } from './abis/Marketplace';
+
 
 // --- CONTRACT CONFIGURATIONS ---
-
-// Get the factory address from our environment variables
 export const FACTORY_CONTRACT_ADDRESS = import.meta.env.VITE_FACTORY_CONTRACT_ADDRESS as `0x${string}`;
 
-// Create the contract configurations for Wagmi, with proper ABI casting.
+// The configurations no longer need casting, as the types are inferred correctly from the .ts files
 export const factoryContract = {
   address: FACTORY_CONTRACT_ADDRESS,
-  abi: canvasFactoryAbi as Abi,
+  abi: canvasFactoryAbi, // Already has 'as const'
 };
 
 export const farcasterCanvasContract = {
-  abi: farcasterCanvasAbi as Abi,
+  abi: farcasterCanvasAbi,
 };
 
 export const pixelNftContract = {
-  abi: pixelNftAbi as Abi,
+  abi: pixelNftAbi,
 };
 
 export const marketplaceContractConfig = {
-  abi: marketplaceAbi as Abi,
+  abi: marketplaceAbi,
 };
 
 

@@ -1,4 +1,4 @@
-[
+export const farcasterCanvasAbi = [
 	{
 		"inputs": [
 			{
@@ -362,4 +362,4 @@
 		"stateMutability": "nonpayable",
 		"type": "function"
 	}
-]
+] as const;
