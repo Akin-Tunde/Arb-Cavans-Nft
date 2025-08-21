@@ -6,7 +6,7 @@
   },
   "frame": {
     "version": "1",
-    "name": "Example Frame",
+    "name": "Arb-Canvas",
     "iconUrl": "https://arb-canvas.netlify.app/icon.png",
     "homeUrl": "https://arb-canvas.netlify.app",
     "imageUrl": "https://arb-canvas.netlify.app/image.png",
