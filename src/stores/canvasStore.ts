@@ -4,13 +4,15 @@ import type { PixelData } from '../config'
 
 interface CanvasState {
   // The addresses for the currently viewed canvas ecosystem
-  canvasContractAddress: `0x${string}` | null;
-  nftContractAddress: `0x${string}` | null;
-  marketplaceContractAddress: `0x${string}` | null;
+  canvasContractAddress: `0x${string}` | undefined;
+  nftContractAddress: `0x${string}` | undefined;
+  marketplaceContractAddress: `0x${string}` | undefined;
 
   // The on-chain data
   pixels: Map<string, PixelData>;
   mintPrice: bigint;
+  canvasWidth: number;
+  canvasHeight: number;
 
   // Actions to update the store
   setCanvasAddresses: (addresses: {
@@ -18,19 +20,23 @@ interface CanvasState {
     nft: `0x${string}`;
     marketplace: `0x${string}`;
   }) => void;
-
   setPixels: (pixels: Map<string, PixelData>) => void;
   updatePixel: (x: number, y: number, data: PixelData) => void;
   setMintPrice: (price: bigint) => void;
+  setCanvasDimensions: (width: number, height: number) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
-  canvasContractAddress: null,
-  nftContractAddress: null,
-  marketplaceContractAddress: null,
+  // --- STATE ---
+  canvasContractAddress: undefined,
+  nftContractAddress: undefined,
+  marketplaceContractAddress: undefined,
   pixels: new Map(),
-  mintPrice: 0n, // Use BigInt for ETH values
+  mintPrice: 0n,
+  canvasWidth: 32, // Default width
+  canvasHeight: 32, // Default height
 
+  // --- ACTIONS ---
   setCanvasAddresses: (addresses) => set({ 
     canvasContractAddress: addresses.canvas,
     nftContractAddress: addresses.nft,
@@ -47,4 +53,9 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   }),
 
   setMintPrice: (price) => set({ mintPrice: price }),
+
+  setCanvasDimensions: (width, height) => set({ 
+    canvasWidth: width, 
+    canvasHeight: height 
+  }),
 }))

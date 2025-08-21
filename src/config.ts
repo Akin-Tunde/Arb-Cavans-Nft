@@ -1,30 +1,37 @@
+// src/config.ts
+import type { Abi } from 'viem';
+
+// Import all your ABI JSON files
 import canvasFactoryAbi from './abis/canvasFactory.json';
 import farcasterCanvasAbi from './abis/farcasterCanvas.json';
 import pixelNftAbi from './abis/pixelNft.json';
+import marketplaceAbi from './abis/marketplace.json';
+
+// --- CONTRACT CONFIGURATIONS ---
 
 // Get the factory address from our environment variables
 export const FACTORY_CONTRACT_ADDRESS = import.meta.env.VITE_FACTORY_CONTRACT_ADDRESS as `0x${string}`;
 
-// Create the contract configurations for Wagmi
+// Create the contract configurations for Wagmi, with proper ABI casting.
 export const factoryContract = {
   address: FACTORY_CONTRACT_ADDRESS,
-  abi: canvasFactoryAbi,
-} as const; // `as const` is important for type safety
+  abi: canvasFactoryAbi as Abi,
+};
 
 export const farcasterCanvasContract = {
-  abi: farcasterCanvasAbi,
-} as const;
+  abi: farcasterCanvasAbi as Abi,
+};
 
 export const pixelNftContract = {
-  abi: pixelNftAbi,
-} as const;
-
-// src/config.ts - Add this to the file
-import marketplaceAbi from './abis/marketplace.json';
+  abi: pixelNftAbi as Abi,
+};
 
 export const marketplaceContractConfig = {
-  abi: marketplaceAbi,
-} as const;
+  abi: marketplaceAbi as Abi,
+};
+
+
+// --- APPLICATION CONFIGURATIONS ---
 
 export const COLOR_PALETTE = [
   '#FFFFFF', // 0: Unminted (White)
@@ -37,34 +44,13 @@ export const COLOR_PALETTE = [
   '#FF69B4', // 7: HotPink
 ];
 
+
+// --- TYPE DEFINITIONS ---
+
 /**
- * Represents the data for a single pixel.
+ * Represents the on-chain data for a single pixel.
  */
 export interface PixelData {
-  owner: string;
+  owner: `0x${string}`;
   colorIndex: number;
-}
-
-/**
- * Generates fake pixel data for UI development.
- */
-export function generateMockPixels(width: number, height: number): Map<string, PixelData> {
-  const mockPixels = new Map<string, PixelData>();
-  
-  // A smiley face :)
-  const smileyCoords = [
-    [10, 10], [15, 10], // Eyes
-    [9, 13], [10, 14], [11, 15], [12, 15], [13, 15], [14, 14], [16, 13] // Smile
-  ];
-
-  smileyCoords.forEach(([x, y]) => {
-    const key = `${x},${y}`;
-    mockPixels.set(key, { owner: '0xMockUser1', colorIndex: 1 }); // Black
-  });
-
-  mockPixels.set('5,5', { owner: '0xMockUser2', colorIndex: 2 });
-  mockPixels.set('25,25', { owner: '0xMockUser3', colorIndex: 4 });
-  mockPixels.set('3,28', { owner: '0xMockUser1', colorIndex: 7 });
-
-  return mockPixels;
 }

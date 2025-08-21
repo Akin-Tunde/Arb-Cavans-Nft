@@ -1,18 +1,19 @@
 // src/components/PixelInfoPanel.tsx (Upgraded Version)
 import { useState, useEffect } from 'react';
 import { useUiStore } from '../stores/uiStore';
-import { COLOR_PALETTE, marketplaceContractConfig, pixelNftContract } from '../config';
+import {  marketplaceContractConfig, pixelNftContract } from '../config';
 import { useCanvasStore } from '../stores/canvasStore';
-import { formatEther, parseEther } from 'viem';
+import { formatEther } from 'viem';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { farcasterCanvasContract } from '../config';
 import { BaseError } from 'viem';
 import { ColorPalette } from './ColorPalette'; // Import the new component
+import toast from 'react-hot-toast'; 
 
 export function PixelInfoPanel() {
   // --- STATE AND STORES ---
   const selectedPixel = useUiStore((state) => state.selectedPixel);
-  const { pixels, mintPrice, canvasContractAddress, nftContractAddress, marketplaceContractAddress, updatePixel } = useCanvasStore();
+  const { pixels, mintPrice, canvasContractAddress, nftContractAddress, marketplaceContractAddress } = useCanvasStore();
   const { address: userAddress, isConnected } = useAccount();
   const [selectedColor, setSelectedColor] = useState(1); // Default to black
 
@@ -44,18 +45,54 @@ export function PixelInfoPanel() {
   const isOwner = isConnected && pixelData && pixelData.owner.toLowerCase() === userAddress?.toLowerCase();
 
   // --- TRANSACTION HANDLERS ---
-  const handleMint = () => writeContract({ ...farcasterCanvasContract, address: canvasContractAddress, functionName: 'mintPixel', args: [x, y, selectedColor], value: mintPrice });
-  const handleChangeColor = () => writeContract({ ...pixelNftContract, address: nftContractAddress, functionName: 'changeColor', args: [tokenId, selectedColor] });
-  const handleBuy = () => writeContract({ ...marketplaceContractConfig, address: marketplaceContractAddress, functionName: 'buyPixel', args: [tokenId], value: listing?.price });
+ const handleMint = () => {
+    if (!canvasContractAddress) return; // <-- ADD THIS CHECK
+    writeContract({ 
+      ...farcasterCanvasContract, 
+      address: canvasContractAddress, // Now TypeScript knows this is not undefined
+      functionName: 'mintPixel', 
+      args: [x, y, selectedColor], 
+      value: mintPrice 
+    });
+  };
+
+
+ const handleChangeColor = () => {
+    if (!nftContractAddress) return; // <-- ADD THIS CHECK
+    writeContract({ 
+      ...pixelNftContract, 
+      address: nftContractAddress, 
+      functionName: 'changeColor', 
+      args: [tokenId, selectedColor] 
+    });
+  };
+
+  const handleBuy = () => {
+    if (!marketplaceContractAddress || !listing?.price) return; // <-- ADD THIS CHECK
+    writeContract({ 
+      ...marketplaceContractConfig, 
+      address: marketplaceContractAddress, 
+      functionName: 'buyPixel', 
+      args: [tokenId], 
+      value: listing.price // We know price is defined here
+    });
+  };
 
   // --- UI UPDATE ON SUCCESS ---
   useEffect(() => {
-    if (isConfirmed) {
-      // This is a simplified refetch. A more robust solution would refetch specific data.
-      window.location.reload(); 
-      reset(); // Reset the transaction state
+    if (isConfirming) {
+      toast.loading('Waiting for confirmation...', { id: 'tx_toast' });
     }
-  }, [isConfirmed, reset]);
+    if (isConfirmed) {
+      toast.success('Transaction Confirmed!', { id: 'tx_toast' });
+      // We can still keep the reload for now to refresh all data
+      setTimeout(() => window.location.reload(), 1500);
+      reset();
+    }
+    if (error) {
+      toast.error(error instanceof BaseError ? error.shortMessage : 'An error occurred.', { id: 'tx_toast' });
+    }
+  }, [isConfirming, isConfirmed, error, reset]);
 
   const isLoading = isPending || isConfirming;
 

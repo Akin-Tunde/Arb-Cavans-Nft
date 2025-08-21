@@ -5,7 +5,8 @@ import { ConnectButton } from './components/ConnectButton';
 import { PixelInfoPanel } from './components/PixelInfoPanel';
 import { CanvasSelector } from './components/CanvasSelector';
 import { CreateCanvasForm } from './components/CreateCanvasForm'; // Import the new form
-import { useCanvasStore } from './stores/canvasStore';
+import { Toaster } from 'react-hot-toast';
+
 import { useLiveCanvasData } from './hooks/useLiveCanvasData'; // We will create this hook next
 
 const CANVAS_WIDTH = 32; // This will become dynamic later
@@ -23,6 +24,7 @@ function App() {
 
   return (
     <main className="flex flex-col items-center min-h-screen p-4 bg-gray-50 sm:p-8">
+       <Toaster position="top-right" />
       <div className="flex justify-between items-center w-full max-w-7xl">
         <button
           onClick={() => setIsCreating(!isCreating)}
