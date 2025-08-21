@@ -9,7 +9,8 @@ export function CanvasSelector() {
   const { canvases, isLoading } = useCanvasEvents();
   
   // 3. Get what we need from our Zustand store
-  const { setCanvasAddresses, canvasContractAddress } = useCanvasStore();
+  const { setCanvasAddresses, canvasContractAddress, setCanvasDimensions } = useCanvasStore();
+
 
   // This effect automatically selects the first canvas when the list loads
   useEffect(() => {
@@ -20,6 +21,7 @@ export function CanvasSelector() {
         nft: firstCanvas.nftContract,
         marketplace: firstCanvas.marketplaceContract,
       });
+      setCanvasDimensions(firstCanvas.width, firstCanvas.height);
     }
   }, [canvases, canvasContractAddress, setCanvasAddresses]);
   
@@ -33,6 +35,8 @@ export function CanvasSelector() {
         nft: selectedCanvas.nftContract,
         marketplace: selectedCanvas.marketplaceContract,
       });
+      // When the user selects a new canvas, update its dimensions in the global store.
+      setCanvasDimensions(selectedCanvas.width, selectedCanvas.height);
     }
   }
 

@@ -18,7 +18,7 @@ const config = createConfig({
   chains: [baseSepolia], // Use baseSepolia here
   connectors: [injected()],
   transports: {
-    [baseSepolia.id]: http(), // Use baseSepolia here
+    [baseSepolia.id]: http(import.meta.env.VITE_ARBITRUM_RPC_URL), // Use baseSepolia here
   },
 })
 

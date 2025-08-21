@@ -8,14 +8,14 @@ import { CreateCanvasForm } from './components/CreateCanvasForm'; // Import the 
 import { Toaster } from 'react-hot-toast';
 
 import { useLiveCanvasData } from './hooks/useLiveCanvasData'; // We will create this hook next
+import { useCanvasStore } from './stores/canvasStore';
 
-const CANVAS_WIDTH = 32; // This will become dynamic later
-const CANVAS_HEIGHT = 32;
+
 
 function App() {
   const [isCreating, setIsCreating] = useState(false); // State to toggle UI
   const { pixels, refetchCanvasData } = useLiveCanvasData(); // Use our new data hook
-
+  const { canvasWidth, canvasHeight } = useCanvasStore();
   // This function will be called by the form on success
   function handleCanvasCreated() {
     refetchCanvasData(); // Refetch the list of canvases
@@ -49,14 +49,14 @@ function App() {
         <div className="flex flex-wrap justify-center w-full gap-8">
           <div className="shadow-lg rounded-lg overflow-hidden w-[600px] h-[600px]">
             <CanvasGrid 
-              width={CANVAS_WIDTH}
-              height={CANVAS_HEIGHT}
+               width={canvasWidth}
+              height={canvasHeight}
               pixels={pixels}
             />
           </div>
           <div className="flex flex-col w-[300px] gap-4">
             <CanvasSelector />
-            <PixelInfoPanel />
+            <PixelInfoPanel refetchData={refetchCanvasData} />
           </div>
         </div>
       )}

@@ -9,7 +9,11 @@ import { ColorPalette } from './ColorPalette';
 import { ListModal } from './ListModal';
 import toast from 'react-hot-toast';
 
-export function PixelInfoPanel() {
+interface PixelInfoPanelProps {
+  refetchData: () => void;
+}
+
+export function PixelInfoPanel({ refetchData }: PixelInfoPanelProps){
   // --- STATE AND STORES ---
   const selectedPixel = useUiStore((state) => state.selectedPixel);
   const { pixels, mintPrice, canvasContractAddress, nftContractAddress, marketplaceContractAddress, canvasWidth } = useCanvasStore();
@@ -99,7 +103,7 @@ export function PixelInfoPanel() {
       setListingPrice('');
       resetWriteContract();
     }
-  }, [isConfirming, isConfirmed, error, resetWriteContract, listingPrice, marketplaceContractAddress, writeContract, tokenId]);
+  }, [isConfirming, isConfirmed, error, resetWriteContract, listingPrice, marketplaceContractAddress, writeContract, tokenId, refetchData]);
 
   const isLoading = isPending || isConfirming;
 
