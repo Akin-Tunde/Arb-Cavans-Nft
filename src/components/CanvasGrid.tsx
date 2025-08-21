@@ -1,3 +1,4 @@
+// src/components/CanvasGrid.tsx
 import { COLOR_PALETTE, type PixelData } from '../config';
 import { useUiStore } from '../stores/uiStore';
 
@@ -41,9 +42,11 @@ export const CanvasGrid: React.FC<CanvasGridProps> = ({ width, height, pixels })
         return (
           <div
             key={index}
-            className={`w-full h-full shadow-[inset_0_0_0_0.5px_rgba(224,224,224,1)]
-                        hover:outline hover:outline-2 hover:outline-cyan-400 hover:z-10 cursor-pointer
-                        ${isSelected ? 'outline outline-2 outline-cyan-400 z-10' : ''}`}
+            // --- THIS IS THE CORRECTED LINE ---
+            // We removed the redundant `hover:outline` and `outline` classes
+           className={`w-full h-full shadow-[inset_0_0_0_0.5px_rgba(224,224,224,1)]
+            hover:outline-2 hover:outline-red-500 hover:z-10 cursor-pointer
+            ${isSelected ? 'outline-2 outline-red-500 z-10' : ''}`}
             style={{ backgroundColor: getPixelColor(index) }}
             onClick={() => handlePixelClick(index)}
           />

@@ -1,7 +1,8 @@
 // src/components/PixelInfoPanel.tsx
+
 import { useState, useEffect } from 'react';
 import { useUiStore } from '../stores/uiStore';
-import { marketplaceContractConfig, pixelNftContract, farcasterCanvasContract } from '../config';
+import { marketplaceContractConfig, pixelNftContract, farcasterCanvasContract, COLOR_PALETTE } from '../config';
 import { useCanvasStore } from '../stores/canvasStore';
 import { formatEther, parseEther, BaseError } from 'viem';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
@@ -14,20 +15,22 @@ interface PixelInfoPanelProps {
 }
 
 export function PixelInfoPanel({ refetchData }: PixelInfoPanelProps){
-  // --- STATE AND STORES ---
   const selectedPixel = useUiStore((state) => state.selectedPixel);
+  
   const { pixels, mintPrice, canvasContractAddress, nftContractAddress, marketplaceContractAddress, canvasWidth } = useCanvasStore();
   const { address: userAddress, isConnected } = useAccount();
   
-  const [selectedColor, setSelectedColor] = useState(1); // Default to black (index 1)
+  const [selectedColor, setSelectedColor] = useState(1);
   const [isListModalOpen, setListModalOpen] = useState(false);
-  const [listingPrice, setListingPrice] = useState(''); // Used to sequence the approve/list flow
+  const [listingPrice, setListingPrice] = useState('');
 
-  // --- WAGMI HOOKS ---
-  const { data: hash, error, writeContract, isPending, reset: resetWriteContract } = useWriteContract();
+  // --- THIS IS THE CORRECTED HOOK USAGE ---
+  // The useWriteContract hook itself does not take onSuccess or onError.
+  // We will handle these states in the useEffect below.
+  const { data: hash, error, isPending, writeContract, reset: resetWriteContract } = useWriteContract();
+
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  // --- DATA FETCHING (Secondary Market) ---
   const tokenId = selectedPixel ? (BigInt(selectedPixel.y) * BigInt(canvasWidth) + BigInt(selectedPixel.x)) : 0n;
 
   const { data: listingData } = useReadContract({
@@ -41,25 +44,16 @@ export function PixelInfoPanel({ refetchData }: PixelInfoPanelProps){
   const listing = listingData as { seller: `0x${string}`, price: bigint } | undefined;
   const isForSale = listing && listing.price > 0n;
 
-  // --- UI LOGIC ---
-  if (!selectedPixel) {
-    return (
-      <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
-        <h3 className="text-lg font-semibold">Select a Pixel</h3>
-        <p className="mt-2 text-sm text-gray-500">Click on any pixel to interact.</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    setSelectedColor(1);
+  }, [selectedPixel]);
 
-  const { x, y } = selectedPixel;
-  const pixelData = pixels.get(`${x},${y}`);
-  const isOwner = isConnected && pixelData && pixelData.owner.toLowerCase() === userAddress?.toLowerCase();
+  // --- Handlers remain the same ---
 
-  // --- TRANSACTION HANDLERS ---
   const handleMint = () => {
-    if (!canvasContractAddress) return;
+    if (!canvasContractAddress || !selectedPixel) return;
     toast.loading('Sending transaction...', { id: 'tx_toast' });
-    writeContract({ ...farcasterCanvasContract, address: canvasContractAddress, functionName: 'mintPixel', args: [x, y, selectedColor], value: mintPrice });
+    writeContract({ ...farcasterCanvasContract, address: canvasContractAddress, functionName: 'mintPixel', args: [selectedPixel.x, selectedPixel.y, selectedColor], value: mintPrice });
   };
 
   const handleChangeColor = () => {
@@ -78,36 +72,54 @@ export function PixelInfoPanel({ refetchData }: PixelInfoPanelProps){
     if (!nftContractAddress || !marketplaceContractAddress) return;
     setListingPrice(price);
     setListModalOpen(false);
-    toast.loading('1/2: Approving transaction...', { id: 'tx_toast' });
+    toast.loading('1/2: Approving marketplace...', { id: 'tx_toast' });
     writeContract({ ...pixelNftContract, address: nftContractAddress, functionName: 'approve', args: [marketplaceContractAddress, tokenId] });
   };
+  
+  // (We can add handleCancelListing and handleUpdateListing back later if you like)
 
-  // --- EFFECT for Transaction Sequencing and UI Updates ---
+  // --- THIS IS THE CORRECTED EFFECT for Transaction State Handling ---
   useEffect(() => {
     if (isConfirming) {
       toast.loading('Waiting for confirmation...', { id: 'tx_toast', duration: Infinity });
     }
+
     if (isConfirmed) {
       if (listingPrice && marketplaceContractAddress) {
         toast.loading('2/2: Listing pixel...', { id: 'tx_toast' });
         writeContract({ ...marketplaceContractConfig, address: marketplaceContractAddress, functionName: 'listPixel', args: [tokenId, parseEther(listingPrice)] });
-        setListingPrice(''); // Clear price to prevent re-triggering
+        setListingPrice('');
       } else {
         toast.success('Transaction Confirmed!', { id: 'tx_toast', duration: 2000 });
-        setTimeout(() => window.location.reload(), 1500);
+        setTimeout(() => refetchData(), 1500);
       }
       resetWriteContract();
     }
+
+    // This is the correct place to handle the error state from the hook.
     if (error) {
       toast.error(error instanceof BaseError ? error.shortMessage : 'An error occurred.', { id: 'tx_toast', duration: 4000 });
-      setListingPrice('');
-      resetWriteContract();
+      setListingPrice(''); // Reset listing flow on error
+      resetWriteContract(); // Reset to clear the error state
     }
   }, [isConfirming, isConfirmed, error, resetWriteContract, listingPrice, marketplaceContractAddress, writeContract, tokenId, refetchData]);
 
+  // --- The rest of the component's JSX remains the same ---
+  
+  if (!selectedPixel) {
+    return (
+      <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <h3 className="text-lg font-semibold">Select a Pixel</h3>
+        <p className="mt-2 text-sm text-gray-500">Click on any pixel on the grid to interact.</p>
+      </div>
+    );
+  }
+
+  const { x, y } = selectedPixel;
+  const pixelData = pixels.get(`${x},${y}`);
+  const isOwner = isConnected && pixelData && pixelData.owner.toLowerCase() === userAddress?.toLowerCase();
   const isLoading = isPending || isConfirming;
 
-  // --- RENDER LOGIC ---
   return (
     <>
       <ListModal 
@@ -121,13 +133,13 @@ export function PixelInfoPanel({ refetchData }: PixelInfoPanelProps){
         
         <div className="mt-4 space-y-3">
           {pixelData ? (
-            // --- Case 1: Pixel is Minted ---
+            // Pixel is Minted
             <>
-              <p><strong>Status:</strong> <span className={`font-semibold ${isForSale ? 'text-yellow-600' : 'text-green-600'}`}>{isForSale ? "For Sale" : "Minted"}</span></p>
+              <p><strong>Status:</strong> <span className={`font-semibold ${isForSale ? 'text-yellow-600' : 'text-green-600'}`}>{isForSale ? "For Sale" : "Owned"}</span></p>
               <p><strong>Owner:</strong> <span className="font-mono text-sm break-all">{pixelData.owner}</span></p>
               
               {isOwner ? (
-                // --- OWNER VIEW ---
+                // OWNER VIEW
                 <div className="pt-4 space-y-3 border-t">
                   <ColorPalette selectedColor={selectedColor} onSelectColor={setSelectedColor} />
                   <button onClick={handleChangeColor} disabled={isLoading} className="w-full px-4 py-2 font-bold text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 disabled:bg-gray-400">
@@ -138,7 +150,7 @@ export function PixelInfoPanel({ refetchData }: PixelInfoPanelProps){
                   </button>
                 </div>
               ) : isForSale ? (
-                // --- BUYER VIEW ---
+                // BUYER VIEW
                 <div className="pt-4 border-t">
                   <p><strong>Price:</strong> <span className="font-semibold">{formatEther(listing.price)} ETH</span></p>
                   <button onClick={handleBuy} disabled={!isConnected || isLoading} className="w-full px-4 py-2 mt-4 font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-400">
@@ -146,12 +158,11 @@ export function PixelInfoPanel({ refetchData }: PixelInfoPanelProps){
                   </button>
                 </div>
               ) : (
-                 // --- VISITOR VIEW (Not for sale) ---
                 <p className="pt-4 mt-4 text-sm text-center text-gray-500 border-t">This pixel is owned and not currently for sale.</p>
               )}
             </>
           ) : (
-            // --- Case 2: Pixel is Unminted ---
+            // Pixel is Unminted
             <>
               <p><strong>Status:</strong> <span className="font-semibold text-blue-600">Available</span></p>
               <ColorPalette selectedColor={selectedColor} onSelectColor={setSelectedColor} />
@@ -160,11 +171,6 @@ export function PixelInfoPanel({ refetchData }: PixelInfoPanelProps){
               </button>
             </>
           )}
-        </div>
-
-        {/* Transaction Status Display */}
-        <div className="mt-4 text-xs font-mono h-4">
-          {hash && !isConfirmed && !error && <div>Hash: {hash.substring(0,10)}...</div>}
         </div>
       </div>
     </>
