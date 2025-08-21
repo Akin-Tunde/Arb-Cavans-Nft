@@ -1,7 +1,31 @@
-/**
- * The official color palette for the canvas.
- * Index 0 is reserved for unminted pixels.
- */
+import canvasFactoryAbi from './abis/canvasFactory.json';
+import farcasterCanvasAbi from './abis/farcasterCanvas.json';
+import pixelNftAbi from './abis/pixelNft.json';
+
+// Get the factory address from our environment variables
+export const FACTORY_CONTRACT_ADDRESS = import.meta.env.VITE_FACTORY_CONTRACT_ADDRESS as `0x${string}`;
+
+// Create the contract configurations for Wagmi
+export const factoryContract = {
+  address: FACTORY_CONTRACT_ADDRESS,
+  abi: canvasFactoryAbi,
+} as const; // `as const` is important for type safety
+
+export const farcasterCanvasContract = {
+  abi: farcasterCanvasAbi,
+} as const;
+
+export const pixelNftContract = {
+  abi: pixelNftAbi,
+} as const;
+
+// src/config.ts - Add this to the file
+import marketplaceAbi from './abis/marketplace.json';
+
+export const marketplaceContractConfig = {
+  abi: marketplaceAbi,
+} as const;
+
 export const COLOR_PALETTE = [
   '#FFFFFF', // 0: Unminted (White)
   '#000000', // 1: Black

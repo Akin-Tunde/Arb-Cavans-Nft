@@ -1,39 +1,38 @@
-// src/main.tsx
+// src/main.tsx (Final Corrected Version)
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// 1. Import the necessary parts from wagmi and viem
+// 1. Import Wagmi and Viem as before
 import { WagmiConfig, createConfig } from 'wagmi'
 import { arbitrumSepolia } from 'wagmi/chains'
 import { http } from 'viem'
-import { injected } from 'wagmi/connectors' // Import the injected connector
+import { injected } from 'wagmi/connectors'
 
-// 2. Configure the Wagmi client with the v2 API
+// 2. Import the necessary parts from TanStack Query
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+// 3. Create a new QueryClient instance
+const queryClient = new QueryClient()
+
+// 4. Configure the Wagmi client as before
 const config = createConfig({
-  // An array of chains your dApp supports
   chains: [arbitrumSepolia],
-  
-  // An array of connectors for different wallets
-  connectors: [
-    injected(), // For MetaMask, Rainbow, etc.
-  ],
-  
-  // The transport layer for communicating with the blockchain
+  connectors: [injected()],
   transports: {
-    [arbitrumSepolia.id]: http(), // Use a public RPC for the Arbitrum Sepolia chain
+    [arbitrumSepolia.id]: http(),
   },
-
-  // Wagmi v2 uses a built-in storage mechanism to persist connections,
-  // making the top-level 'autoConnect' flag obsolete.
 })
 
-// 3. Render the app, wrapping it with the WagmiConfig provider
+// 5. Render the app, now with BOTH providers
+// The QueryClientProvider must be OUTSIDE the WagmiConfig
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <WagmiConfig config={config}>
-      <App />
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </WagmiConfig>
   </React.StrictMode>,
 )
