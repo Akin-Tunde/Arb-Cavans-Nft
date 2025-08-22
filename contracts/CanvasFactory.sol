@@ -1,3 +1,4 @@
+// contracts/CanvasFactory.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -5,6 +6,18 @@ import "./FarcasterCanvas.sol";
 import "./Marketplace.sol";
 
 contract CanvasFactory {
+    
+    // Using a struct is essential to solve the stack depth issue.
+    struct CanvasParams {
+        uint256 width;
+        uint256 height;
+        uint256 initialMintPrice;
+        uint256 marketplaceFeeBps;
+        string name;
+        string symbol;
+        string description;
+    }
+
     event CanvasCreated(
         address indexed creator,
         address canvasContract,
@@ -13,45 +26,42 @@ contract CanvasFactory {
         uint256 width,
         uint256 height,
         string name,
-        string symbol
+        string symbol,
+        string description
     );
 
-    function createCanvas(
-        uint256 _width,
-        uint256 _height,
-        uint256 _initialMintPrice,
-        uint256 _marketplaceFeeBps,
-        string memory _name,
-        string memory _symbol
-    ) public {
+    // This function is simplified to reduce local variables.
+    function createCanvas(CanvasParams calldata params) public {
         address creator = msg.sender;
 
         FarcasterCanvas newCanvas = new FarcasterCanvas(
-            _width,
-            _height,
+            params.width,
+            params.height,
             creator,
-            _initialMintPrice,
-            _name,
-            _symbol
+            params.initialMintPrice,
+            params.name,
+            params.symbol
         );
 
-        PixelNFT newPixelNFT = newCanvas.pixelNFT();
+        // We get the PixelNFT address directly from the newCanvas object.
+        address pixelNFTAddress = address(newCanvas.pixelNFT());
 
         Marketplace newMarketplace = new Marketplace(
-            address(newPixelNFT),
+            pixelNFTAddress,
             creator,
-            _marketplaceFeeBps
+            params.marketplaceFeeBps
         );
 
         emit CanvasCreated(
             creator,
             address(newCanvas),
-            address(newPixelNFT),
+            pixelNFTAddress,
             address(newMarketplace),
-            _width,
-            _height,
-            _name,
-            _symbol
+            params.width,
+            params.height,
+            params.name,
+            params.symbol,
+            params.description
         );
     }
 }
