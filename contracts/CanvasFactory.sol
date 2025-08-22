@@ -1,4 +1,3 @@
-// contracts/CanvasFactory.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -12,14 +11,18 @@ contract CanvasFactory {
         address nftContract,
         address marketplaceContract,
         uint256 width,
-        uint256 height
+        uint256 height,
+        string name,
+        string symbol
     );
 
     function createCanvas(
         uint256 _width,
         uint256 _height,
         uint256 _initialMintPrice,
-        uint256 _marketplaceFeeBps
+        uint256 _marketplaceFeeBps,
+        string memory _name,
+        string memory _symbol
     ) public {
         address creator = msg.sender;
 
@@ -27,7 +30,9 @@ contract CanvasFactory {
             _width,
             _height,
             creator,
-            _initialMintPrice
+            _initialMintPrice,
+            _name,
+            _symbol
         );
 
         PixelNFT newPixelNFT = newCanvas.pixelNFT();
@@ -44,7 +49,9 @@ contract CanvasFactory {
             address(newPixelNFT),
             address(newMarketplace),
             _width,
-            _height
+            _height,
+            _name,
+            _symbol
         );
     }
 }
