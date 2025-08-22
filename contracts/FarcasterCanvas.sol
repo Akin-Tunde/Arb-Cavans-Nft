@@ -1,4 +1,3 @@
-// contracts/FarcasterCanvas.sol (Updated Version)
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -21,12 +20,18 @@ contract FarcasterCanvas is Ownable, Pausable, ReentrancyGuard {
     event PriceChangeProposed(uint256 newPrice, uint256 activationTimestamp);
     event PriceChangeActivated(uint256 newPrice);
 
-    // The treasury address is now passed in as the owner
-    constructor(uint256 _width, uint256 _height, address initialOwner, uint256 _initialMintPrice) Ownable(initialOwner) {
+    constructor(
+        uint256 _width,
+        uint256 _height,
+        address initialOwner,
+        uint256 _initialMintPrice,
+        string memory _name,
+        string memory _symbol
+    ) Ownable(initialOwner) {
         canvasWidth = _width;
         canvasHeight = _height;
         mintPrice = _initialMintPrice;
-        pixelNFT = new PixelNFT(_width, address(this));
+        pixelNFT = new PixelNFT(_name, _symbol, _width, address(this));
     }
 
     function mintPixel(uint16 x, uint16 y, uint8 colorIndex) public payable whenNotPaused nonReentrant {
@@ -39,7 +44,7 @@ contract FarcasterCanvas is Ownable, Pausable, ReentrancyGuard {
         pixelNFT.mint(msg.sender, tokenId, colorIndex);
         emit PixelMinted(tokenId, msg.sender, colorIndex);
 
-        (bool success, ) = owner().call{value: msg.value}(""); // Send funds to the owner/treasury
+        (bool success, ) = owner().call{value: msg.value}("");
         require(success, "FarcasterCanvas: Failed to send funds to owner");
     }
 
